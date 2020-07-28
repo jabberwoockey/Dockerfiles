@@ -1,0 +1,59 @@
+# Unpack wordpress into ./wordpress
+# Set ports, container names and credentials
+
+version: "3"
+
+services:
+
+  wordpress:
+    image: wordpress
+    depends_on:
+      - mysql
+    container_name: wp
+    ports:
+      - 8810:80
+    networks:
+      - wpnet
+    environment:
+      WORDPRESS_DB_HOST: 'mysql:3306'
+      WORDPRESS_DB_USER: 'wpadmin'
+      WORDPRESS_DB_PASSWORD: 'wordpress'
+      WORDPRESS_DB_NAME: 'wordpress'
+      WORDPRESS_TABLE_PREFIX: 'wp_'
+    volumes:
+      - ./wordpress:/var/www/html:z
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    networks:
+      - wpnet
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+      MYSQL_USER: 'wpadmin'
+      MYSQL_PASSWORD: 'wordpress'
+      MYSQL_DATABASE: 'wordpress'
+    volumes:
+      - ./mysql:/var/lib/mysql:z
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:standalone
+    container_name: adminer
+    ports:
+      - 8811:8080
+    networks:
+      - wpnet
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+      ADMINER_DESIGN: haeckel
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+networks:
+  wpnet:
+    driver: bridge

@@ -1,0 +1,78 @@
+# Unpack wordpress into ./wordpress,
+# set ports, container names here and
+# credentials in the .env file
+
+version: "3"
+
+services:
+
+  nginx:
+    depends_on:
+      - wordpress
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./wordpress:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - /etc/letsencrypt/:/etc/letsencrypt/
+    networks:
+      - frontend
+      - backend
+
+  wordpress:
+    image: wordpress:php7.2-fpm-alpine
+    container_name: wordpress
+    user: 1000:1000
+    networks:
+      - backend
+    env_file: .env
+    environment:
+      WORDPRESS_DB_HOST: 'mysql'
+      WORDPRESS_DB_USER: $DB_USER
+      WORDPRESS_DB_PASSWORD: $DB_PASSWORD
+      WORDPRESS_DB_NAME: $DB_NAME
+      WORDPRESS_TABLE_PREFIX: 'wp_'
+    volumes:
+      - ./wordpress:/var/www/html
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    networks:
+      - backend
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASSWORD
+      MYSQL_DATABASE: $DB_NAME
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: unless-stopped
+
+#  adminer:
+#    image: adminer:standalone
+#    container_name: adminer
+#    ports:
+#      - 8811:8080
+#    networks:
+#      - backend
+#    environment:
+#      ADMINER_DEFAULT_SERVER: mysql
+#      ADMINER_DESIGN: haeckel
+#    depends_on:
+#      - mysql
+#    restart: unless-stopped
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
