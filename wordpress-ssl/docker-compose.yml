@@ -45,6 +45,7 @@ services:
   mysql:
     image: mysql:5.7
     container_name: mysql
+    user: 1000:1000
     networks:
       - backend
     env_file: .env

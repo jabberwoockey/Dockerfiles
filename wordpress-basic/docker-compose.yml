@@ -7,11 +7,10 @@ services:
 
   wordpress:
     image: wordpress
-    depends_on:
-      - mysql
     container_name: wp
     ports:
       - 8810:80
+    user: 1000:1000
     networks:
       - wpnet
     environment:
@@ -29,6 +28,7 @@ services:
   mysql:
     image: mysql:5.7
     container_name: mysql
+    user: 1000:1000
     networks:
       - wpnet
     environment:
@@ -40,19 +40,19 @@ services:
       - ./mysql:/var/lib/mysql:z
     restart: unless-stopped
 
-  adminer:
-    image: adminer:standalone
-    container_name: adminer
-    ports:
-      - 8811:8080
-    networks:
-      - wpnet
-    environment:
-      ADMINER_DEFAULT_SERVER: mysql
-      ADMINER_DESIGN: haeckel
-    depends_on:
-      - mysql
-    restart: unless-stopped
+#  adminer:
+#    image: adminer:standalone
+#    container_name: adminer
+#    ports:
+#      - 8811:8080
+#    networks:
+#      - wpnet
+#    environment:
+#      ADMINER_DEFAULT_SERVER: mysql
+#      ADMINER_DESIGN: haeckel
+#    depends_on:
+#      - mysql
+#    restart: unless-stopped
 
 networks:
   wpnet:
